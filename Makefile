@@ -19,9 +19,9 @@ TEST_OBJS := $(patsubst tests/%.cpp,$(TEST_DIR)/%.o,$(TEST_SRCS))
 DOCTEST_VERSION := 2.4.11
 DOCTEST_URL := https://github.com/doctest/doctest/releases/download/v$(DOCTEST_VERSION)/doctest.h
 
-.PHONY: all test bear clean setup
+.PHONY: all test bear clean setup help
 
-all: $(TARGET)
+all: $(TARGET) ## Build the entire project
 
 $(TARGET): $(SRC_OBJS) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@
@@ -29,7 +29,7 @@ $(TARGET): $(SRC_OBJS) | $(BUILD_DIR)
 $(OBJ_DIR)/%.o: src/%.cpp | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
-test: $(TEST_BIN)
+test: $(TEST_BIN) ## Test the project
 	@$(TEST_BIN)
 
 $(TEST_BIN): $(TEST_OBJS) $(LIB_OBJS) | $(TEST_DIR)
@@ -42,15 +42,21 @@ $(BUILD_DIR) $(OBJ_DIR) $(TEST_DIR):
 	mkdir -p $@
 
 # Regenerate compile_commands.json for clangd
-bear: clean
+bear: clean ## Generate compile_commands.json for LSP autompletion
 	bear -- $(MAKE) all test
 
-clean:
+clean: ## Clean all the build files
 	rm -rf $(BUILD_DIR)
 
 # Download doctest header
-setup: external/doctest.h
+setup: external/doctest.h ## Download and setup doctest.h
 
 external/doctest.h:
 	mkdir -p external
 	curl -fL $(DOCTEST_URL) -o $@
+
+help: ## List available make targets
+	@grep -E '^[a-zA-Z0-9_.-]+:.*## ' $(firstword $(MAKEFILE_LIST)) | \
+		sort | \
+		awk 'BEGIN { FS = ":.*## " } { printf "%-20s %s\n", $$1, $$2 }'
+

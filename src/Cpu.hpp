@@ -1,11 +1,21 @@
+#include "Bus.hpp"
 #include <cstdint>
 #include <sys/types.h>
 
+namespace Nestun {
 /*
  * Flags go like so
  *  0 0 1 0 0 1 0 0
- *  N V - B D I Z C
+ *  N V U B D I Z C
  *
+ *  C - Carry Flag
+ *  Z - Zero flag
+ *  I - Interrupt disabled
+ *  D - Decimal flag (Unused)
+ *  B - Break (not a flag per se)
+ *  U - Unused
+ *  V - Overflow flag
+ *  N - Negative
  * */
 struct StatusFlags {
   uint8_t value = 0x24; // I + U are set
@@ -21,19 +31,19 @@ struct StatusFlags {
     N = 1 << 7,
   };
 
-  constexpr bool test(uint8_t mask) const { return value & mask; }
+  [[nodiscard]] constexpr bool test(uint8_t mask) const { return value & mask; }
   constexpr void set(uint8_t mask, bool on) {
     value = on ? (value | mask) : (value & ~mask);
   }
 
-  constexpr bool c() const { return value & C; }
-  constexpr bool z() const { return value & Z; }
-  constexpr bool i() const { return value & I; }
-  constexpr bool d() const { return value & D; }
-  constexpr bool b() const { return value & B; }
-  constexpr bool u() const { return value & U; }
-  constexpr bool v() const { return value & V; }
-  constexpr bool n() const { return value & N; }
+  [[nodiscard]] constexpr bool c() const { return value & C; }
+  [[nodiscard]] constexpr bool z() const { return value & Z; }
+  [[nodiscard]] constexpr bool i() const { return value & I; }
+  [[nodiscard]] constexpr bool d() const { return value & D; }
+  [[nodiscard]] constexpr bool b() const { return value & B; }
+  [[nodiscard]] constexpr bool u() const { return value & U; }
+  [[nodiscard]] constexpr bool v() const { return value & V; }
+  [[nodiscard]] constexpr bool n() const { return value & N; }
 
   constexpr void set_c(bool b) { set(C, b); }
   constexpr void set_z(bool b) { set(Z, b); }
@@ -50,14 +60,29 @@ struct StatusFlags {
   }
 };
 
+class Mode {};
+class Instruction {};
+
 class Cpu {
 public:
+  Cpu() = default;
+
   uint8_t A = 0, X = 0, Y = 0;
   uint8_t SP = 0xF0;
   uint16_t PC = 0;
 
   StatusFlags P;
 
+  Bus bus();
+  void load_rom(std::string path);
+  uint8_t run();
+
 private:
+  [[nodiscard]] uint8_t fetch();
+  [[nodiscard]] Mode resolve_addressing_mode(uint8_t op);
+  [[nodiscard]] Instruction decode(uint8_t op, Mode mode);
+  void execute(Instruction instruction);
+
   void set_nz(uint8_t v) { P.set_nz(v); }
 };
+} // namespace Nestun

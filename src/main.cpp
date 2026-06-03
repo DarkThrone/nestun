@@ -1,6 +1,12 @@
-#include <print>
-#include "math.hpp"
+#include "Cpu.hpp"
+#include <cstring>
+#include <string>
+
+using namespace Nestun;
 
 int main() {
-    std::print("1 + 2 = {}\n", add(1, 2));
+  Cpu cpu;
+
+  cpu.load_rom(std::string("file.nes"));
+  cpu.run();
 }

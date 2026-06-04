@@ -1,21 +1,23 @@
 #include "Bus.hpp"
+
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
-#include <iostream>
+#include <print>
 
 using namespace Nestun;
 using namespace std;
 
-[[nodiscard]] uint8_t Bus::read(const uint16_t address) const {
-  return mem.at(address);
-}
+[[nodiscard]] uint8_t Bus::read(const uint16_t address) const { return mem.at(address); }
 
 void Bus::write(const uint16_t address, const uint8_t value) {
   if (address > 0X1000) {
-    std::cerr << "memory read is out of bounds";
+    println(stderr, "memory read is out of bounds");
     quick_exit(-1);
   }
 
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
   mem[address] = value;
 }
+
+void Bus::load_rom(const std::string path) { println("Loading rom {}", path); }

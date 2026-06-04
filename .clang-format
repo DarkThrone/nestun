@@ -1,0 +1,6 @@
+---
+BasedOnStyle: Google
+Standard: c++20          # clang-format tops out here; handles C++23 syntax fine
+ColumnLimit: 100
+IndentWidth: 2
+PointerAlignment: Left   # int* p

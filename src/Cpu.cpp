@@ -1,36 +1,31 @@
 #include "Cpu.hpp"
+
 #include <cstdint>
 #include <print>
 
 using namespace Nestun;
 using namespace std;
 
-uint8_t Cpu::run() {
-  print("Starting CPU");
-  while (true) {
-    uint8_t op = fetch();
-    Mode mode = resolve_addressing_mode(op);
-    Instruction instruction = decode(op, mode);
-    execute(instruction);
-  }
+void Cpu::tick() {
+  uint8_t op = fetch();
+  Instruction instruction = decode(op);
+  execute(instruction);
 }
 
-uint8_t Cpu::fetch() { print("Fetching instruction from"); };
-
-Mode Cpu::resolve_addressing_mode(uint8_t op) {
-  Mode m;
-  print("resolving addressing mode for {:x}", op);
-  return m;
+uint8_t Cpu::fetch() {
+  println("Fetching instruction");
+  return 0xea;
 };
 
-Instruction Cpu::decode(uint8_t op, Mode mode) {
+Instruction Cpu::decode(const uint8_t op) {
   Instruction i;
-  print("Decoding instruciton {} mode {}", op, mode);
+  println("Decoding instruction {:x}", op);
   return i;
 };
 
-void Cpu::execute(Instruction instruction) {
-
+uint8_t Cpu::execute(Instruction _instruction) {
+  println("Executing instruction");
+  return 0;
 };
 
-void Cpu::load_rom(std::string path) { cout << "Loading: " << path; }
+void Cpu::reset() { println("Resetting PC to {}", 1); }

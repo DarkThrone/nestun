@@ -1,12 +1,23 @@
-#include "Cpu.hpp"
 #include <cstring>
+#include <print>
 #include <string>
 
+#include "Cpu.hpp"
+
 using namespace Nestun;
+using namespace std;
 
 int main() {
-  Cpu cpu;
+  Bus bus{};
+  Cpu cpu(bus);
 
-  cpu.load_rom(std::string("file.nes"));
-  cpu.run();
+  bus.load_rom(std::string("file.nes"));
+
+  println("Starting CPU");
+  cpu.reset();
+
+  int i = 0;
+  while (i++ < 100) {
+    cpu.tick();
+  }
 }

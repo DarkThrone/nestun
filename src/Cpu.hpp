@@ -1,6 +1,8 @@
-#include "Bus.hpp"
-#include <cstdint>
 #include <sys/types.h>
+
+#include <cstdint>
+
+#include "Bus.hpp"
 
 namespace Nestun {
 /*
@@ -18,7 +20,7 @@ namespace Nestun {
  *  N - Negative
  * */
 struct StatusFlags {
-  uint8_t value = 0x24; // I + U are set
+  uint8_t value = 0x24;  // I + U are set
 
   enum : uint8_t {
     C = 1 << 0,
@@ -32,9 +34,7 @@ struct StatusFlags {
   };
 
   [[nodiscard]] constexpr bool test(uint8_t mask) const { return value & mask; }
-  constexpr void set(uint8_t mask, bool on) {
-    value = on ? (value | mask) : (value & ~mask);
-  }
+  constexpr void set(uint8_t mask, bool on) { value = on ? (value | mask) : (value & ~mask); }
 
   [[nodiscard]] constexpr bool c() const { return value & C; }
   [[nodiscard]] constexpr bool z() const { return value & Z; }
@@ -56,7 +56,7 @@ struct StatusFlags {
 
   constexpr void set_nz(uint8_t result) {
     set(Z, result == 0);
-    set(N, result & 0x80);
+    set(N, (result & 0x80) != 0);
   }
 };
 
@@ -64,25 +64,22 @@ class Mode {};
 class Instruction {};
 
 class Cpu {
-public:
-  Cpu() = default;
-
   uint8_t A = 0, X = 0, Y = 0;
   uint8_t SP = 0xF0;
   uint16_t PC = 0;
 
   StatusFlags P;
+  Bus* bus_;
 
-  Bus bus();
-  void load_rom(std::string path);
-  uint8_t run();
-
-private:
   [[nodiscard]] uint8_t fetch();
-  [[nodiscard]] Mode resolve_addressing_mode(uint8_t op);
-  [[nodiscard]] Instruction decode(uint8_t op, Mode mode);
-  void execute(Instruction instruction);
-
+  [[nodiscard]] Instruction decode(uint8_t op);
+  uint8_t execute(Instruction instruction);
   void set_nz(uint8_t v) { P.set_nz(v); }
+
+ public:
+  Cpu(Bus& bus) : bus_(&bus) {};
+
+  void tick();
+  void reset();
 };
-} // namespace Nestun
+}  // namespace Nestun

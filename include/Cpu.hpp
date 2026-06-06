@@ -1,6 +1,7 @@
 #include <sys/types.h>
 
 #include <cstdint>
+#include <string>
 
 #include "Bus.hpp"
 
@@ -98,16 +99,13 @@ enum class OpShape : uint8_t {
 struct Instruction {
   AddressingMode mode;
   OpShape shape;
+  std::string op;
+  uint8_t opcode;
   uint8_t cycles;
   void (*execute)(Cpu& cpu, uint16_t address);
 };
 
 class Cpu {
-  uint8_t A = 0, X = 0, Y = 0;
-  uint8_t SP = 0xF0;
-  uint16_t PC = 0;
-
-  StatusFlags P;
   Bus* bus_;
 
   [[nodiscard]] uint8_t fetch();
@@ -116,12 +114,21 @@ class Cpu {
   void set_nz(uint8_t v) { P.set_nz(v); }
 
  public:
+  uint8_t A = 0, X = 0, Y = 0;
+  uint8_t SP = 0xF0;
+  uint16_t PC = 0;
+
+  StatusFlags P;
+
   static const std::array<Instruction, 256> TABLE;
 
   Cpu(Bus& bus) : bus_(&bus) {};
 
   void tick();
   void reset();
+
+  void op_LDA_immediate(uint8_t);
+  void op_LDA_zeropage(uint8_t);
 };
 
 }  // namespace Nestun

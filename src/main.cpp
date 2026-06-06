@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <cstring>
+#include <format>
 #include <print>
 #include <string>
 
@@ -12,6 +13,7 @@
 
 using namespace Nestun;
 using namespace std;
+
 namespace {
 int run_raylib() {
   const int screenWidth = 800;
@@ -37,6 +39,19 @@ int run_raylib() {
   SetTargetFPS(60);  // Set our game to run at 60 frames-per-second
   //--------------------------------------------------------------------------------------
 
+  Bus bus{};
+  Cpu cpu(bus);
+
+  bus.load_rom(std::string("file.nes"));
+
+  println("Starting CPU");
+  cpu.reset();
+
+  int i = 0;
+  while (i++ < 10) {
+    cpu.tick();
+  }
+
   // Main game loop
   while (!WindowShouldClose())  // Detect window close button or ESC key
   {
@@ -54,10 +69,12 @@ int run_raylib() {
 
     DrawRectangle(0, 0, gameScreenWidth, gameScreenHeight, color);
 
-    DrawText(
-        "If executed inside a window,\nyou can resize the window,\nand see the screen scaling!", 10,
-        25, 20, WHITE);
-    // DrawText(TextFormat("Default Mouse: [%i , %i]", (int)mouse.x, (int)mouse.y), 350, 25, 20,
+    DrawText(format("A: {:04x}", cpu.A).c_str(), 10, 25, 20, WHITE);
+    DrawText(format("X: {:04x}", cpu.X).c_str(), 240, 25, 20, WHITE);
+    DrawText(format("Y: {:04x}\n", cpu.Y).c_str(), 380, 25, 20, WHITE);
+    DrawText(format("SP: {:04x}\n", cpu.SP).c_str(), 10, 50, 20, WHITE);
+    DrawText(format("PC: {:04x}", cpu.PC).c_str(), 10, 100, 20, WHITE);
+    // DrawText(TextFormat("Default Mouse : [%i , %i]", (int)mouse.x, (int)mouse.y), 350, 25, 20,
     //          GREEN);
     // DrawText(TextFormat("Virtual Mouse: [%i , %i]", (int)virtualMouse.x, (int)virtualMouse.y),
     // 350, 55, 20, YELLOW);
@@ -89,19 +106,4 @@ int run_raylib() {
 }
 }  // namespace
 
-int main() {
-  Bus bus{};
-  Cpu cpu(bus);
-
-  bus.load_rom(std::string("file.nes"));
-
-  println("Starting CPU");
-  cpu.reset();
-
-  int i = 0;
-  while (i++ < 100) {
-    cpu.tick();
-  }
-
-  run_raylib();
-}
+int main() { run_raylib(); }

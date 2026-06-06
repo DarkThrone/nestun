@@ -1,0 +1,120 @@
+#include <sys/types.h>
+
+#include <array>
+#include <cstddef>
+#include <cstdint>
+
+#include "../include/Cpu.hpp"
+
+// using Nestun::Cpu;
+
+namespace {
+
+using namespace Nestun;
+void op_lda_immediate(Cpu& cpu, uint16_t v) { cpu.op_LDA_immediate(v); }
+void op_lda_zeropage(Cpu& cpu, uint16_t a) { cpu.op_LDA_zeropage(a); }
+void op_lda_zeropageX(Cpu& cpu, uint16_t a) { cpu.op_LDA_zeropageX(a); }
+void op_lda_zeropageY(Cpu& cpu, uint16_t a) { cpu.op_LDA_zeropageY(a); }
+void op_lda_absolute(Cpu& cpu, uint16_t a) { cpu.op_LDA_absolute(a); }
+void op_lda_absoluteX(Cpu& cpu, uint16_t a) { cpu.op_LDA_absoluteX(a); }
+void op_lda_absoluteY(Cpu& cpu, uint16_t a) { cpu.op_LDA_absoluteY(a); }
+void op_lda_indirectX(Cpu& cpu, uint16_t a) { cpu.op_LDA_indirectX(a); }
+void op_lda_indirectY(Cpu& cpu, uint16_t a) { cpu.op_LDA_indirectY(a); }
+
+constexpr auto buildTable() {
+  std::array<Instruction, 256> t{};
+
+  for (auto& i : t) {
+    i = {.mode = AddressingMode::Implied,
+         .shape = OpShape::Implied,
+         .op = "ILL",
+         .opcode = 0x04,
+         .cycles = 2,
+         .execute = nullptr};
+  }
+
+  // LDA
+  t[0xA9] =
+      {
+          .mode = AddressingMode::Immediate,
+          .shape = OpShape::Write,
+          .op = "LDA",
+          .opcode = 0xA9,
+          .cycles = 2,
+          .execute = op_lda_immediate,
+      }
+
+  t[0xA5] = {.mode = AddressingMode::ZeroPage,
+             .shape = OpShape::Write,
+             .op = "LDA",
+             .opcode = 0xA5,
+             .cycles = 3,
+             .execute = [](Cpu& c, uint16_t a) {}};
+
+  t[0xB5] = {.mode = AddressingMode::ZeroPageX,
+             .shape = OpShape::Write,
+             .op = "LDA",
+             .opcode = 0xB5,
+             .cycles = 4,
+             .execute = [](Cpu& c, uint16_t a) {}};
+
+  t[0xAD] = {.mode = AddressingMode::Absolute,
+             .shape = OpShape::Write,
+             .op = "LDA",
+             .opcode = 0xAD,
+             .cycles = 4,
+             .execute = [](Cpu& c, uint16_t a) {}};
+
+  t[0xBD] = {.mode = AddressingMode::AbsoluteX,
+             .shape = OpShape::Write,
+             .op = "LDA",
+             .opcode = 0xBD,
+             .cycles = 4,
+             .execute = [](Cpu& c, uint16_t a) {}};
+
+  t[0xB9] = {.mode = AddressingMode::AbsoluteY,
+             .shape = OpShape::Write,
+             .op = "LDA",
+             .opcode = 0xB9,
+             .cycles = 4,
+             .execute = [](Cpu& c, uint16_t a) {}};
+
+  t[0xA1] = {.mode = AddressingMode::IndirectX,
+             .shape = OpShape::Write,
+             .op = "LDA",
+             .opcode = 0xA1,
+             .cycles = 6,
+             .execute = [](Cpu& c, uint16_t a) {}};
+
+  t[0xB1] = {.mode = AddressingMode::IndirectY,
+             .shape = OpShape::Write,
+             .op = "LDA",
+             .opcode = 0xB1,
+             .cycles = 5,
+             .execute = [](Cpu& c, uint16_t a) {}};
+  // NOP
+  t[0xEA] = {.mode = AddressingMode::Implied,
+             .shape = OpShape::Implied,
+             .op = "NOP",
+             .opcode = 0xEA,
+             .cycles = 2,
+             .execute = [](Cpu& c, uint16_t a) {}};
+
+  return t;
+};
+}  // namespace
+
+namespace Nestun {
+void Cpu::op_LDA_immediate(uint8_t value) {
+  this->A = value;
+  this->set_nz(value);
+};
+
+void Cpu::op_LDA_zeropage(uint8_t address) {
+  uint8_t value = this->bus_->read(address % 256);
+  this->A = value;
+  this->set_nz(value);
+}
+
+const std::array<Instruction, 256> Cpu::TABLE = buildTable();
+}  // namespace Nestun

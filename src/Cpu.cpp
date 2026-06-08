@@ -7,34 +7,51 @@
 using namespace Nestun;
 using namespace std;
 
-template <>
-struct std::formatter<Instruction> : std::formatter<std::string> {
-  auto format(const Instruction& inst, auto& ctx) const {
-    return std::formatter<std::string>::format(
-        std::format("{} {:02x} cyc={}", inst.op, inst.opcode, inst.cycles), ctx);
+pair<uint16_t, bool> Cpu::resolve(AddressingMode mode) {
+  switch (mode) {
+    case AddressingMode::Implied:
+    case AddressingMode::Accumulator:
+    case AddressingMode::Immediate:
+    case AddressingMode::ZeroPage:
+    case AddressingMode::ZeroPageX:
+    case AddressingMode::ZeroPageY:
+    case AddressingMode::Absolute:
+    case AddressingMode::AbsoluteX:
+    case AddressingMode::AbsoluteY:
+    case AddressingMode::Indirect:
+    case AddressingMode::IndirectX:
+    case AddressingMode::IndirectY:
+    case AddressingMode::Relative:
   }
+  return make_pair(0, false);
 };
 
 void Cpu::tick() {
-  uint8_t op = fetch();
-  Instruction instruction = decode(op);
-  execute(instruction);
-}
-
-uint8_t Cpu::fetch() {
   println("Fetching instruction");
-  return 0xea;
-};
+  uint8_t opcode = bus_->read(PC++);
 
-Instruction Cpu::decode(const uint8_t op) {
-  Instruction i = Cpu::TABLE[op];
-  println("Decoding instruction {:x}", op);
-  return i;
-};
+  const auto& inst = TABLE.at(static_cast<std::size_t>(opcode));
+  println("Decoding instruction {:x}", opcode);
 
-uint8_t Cpu::execute(Instruction inst) {
-  println("Executing instruction: {}", inst);
-  return 0;
-};
+  auto [addr, crossed] = resolve(inst.mode);
+
+  cycles_ += inst.cycles;
+
+  switch (inst.shape) {
+    case OpShape::Write:
+    case OpShape::ReadModifyWrite:
+      inst.execute(*this, addr);
+      break;
+    case OpShape::Read:
+      inst.execute(*this, bus_->read(addr));
+      if (crossed) cycles_++;
+      break;
+    case OpShape::Implied:
+      inst.execute(*this, 0);
+      break;
+  }
+
+  println("Executing instruction: {} {:02x} cyc={}", inst.op, inst.opcode, cycles_);
+}
 
 void Cpu::reset() { println("Resetting PC to {}", 1); }

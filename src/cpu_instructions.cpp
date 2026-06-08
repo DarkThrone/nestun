@@ -11,15 +11,6 @@
 namespace {
 
 using namespace Nestun;
-void op_lda_immediate(Cpu& cpu, uint16_t v) { cpu.op_LDA_immediate(v); }
-void op_lda_zeropage(Cpu& cpu, uint16_t a) { cpu.op_LDA_zeropage(a); }
-void op_lda_zeropageX(Cpu& cpu, uint16_t a) { cpu.op_LDA_zeropageX(a); }
-void op_lda_zeropageY(Cpu& cpu, uint16_t a) { cpu.op_LDA_zeropageY(a); }
-void op_lda_absolute(Cpu& cpu, uint16_t a) { cpu.op_LDA_absolute(a); }
-void op_lda_absoluteX(Cpu& cpu, uint16_t a) { cpu.op_LDA_absoluteX(a); }
-void op_lda_absoluteY(Cpu& cpu, uint16_t a) { cpu.op_LDA_absoluteY(a); }
-void op_lda_indirectX(Cpu& cpu, uint16_t a) { cpu.op_LDA_indirectX(a); }
-void op_lda_indirectY(Cpu& cpu, uint16_t a) { cpu.op_LDA_indirectY(a); }
 
 constexpr auto buildTable() {
   std::array<Instruction, 256> t{};
@@ -41,8 +32,8 @@ constexpr auto buildTable() {
           .op = "LDA",
           .opcode = 0xA9,
           .cycles = 2,
-          .execute = op_lda_immediate,
-      }
+          .execute = [](Cpu& cpu, uint16_t v) { cpu.lda(v); },
+      };
 
   t[0xA5] = {.mode = AddressingMode::ZeroPage,
              .shape = OpShape::Write,
@@ -105,16 +96,10 @@ constexpr auto buildTable() {
 }  // namespace
 
 namespace Nestun {
-void Cpu::op_LDA_immediate(uint8_t value) {
-  this->A = value;
-  this->set_nz(value);
+void Cpu::lda(uint16_t value) {
+  A = value;
+  set_nz(value);
 };
-
-void Cpu::op_LDA_zeropage(uint8_t address) {
-  uint8_t value = this->bus_->read(address % 256);
-  this->A = value;
-  this->set_nz(value);
-}
 
 const std::array<Instruction, 256> Cpu::TABLE = buildTable();
 }  // namespace Nestun

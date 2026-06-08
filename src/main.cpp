@@ -5,7 +5,6 @@
 #include <string>
 
 #include "../external/raylib/src/raylib.h"
-#include "../external/raylib/src/raymath.h"  // Required for: Vector2Clamp()
 #include "Cpu.hpp"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

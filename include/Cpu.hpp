@@ -107,10 +107,8 @@ struct Instruction {
 
 class Cpu {
   Bus* bus_;
+  size_t cycles_ = 0;
 
-  [[nodiscard]] uint8_t fetch();
-  [[nodiscard]] Instruction decode(uint8_t op);
-  uint8_t execute(Instruction instruction);
   void set_nz(uint8_t v) { P.set_nz(v); }
 
  public:
@@ -126,9 +124,11 @@ class Cpu {
 
   void tick();
   void reset();
+  std::pair<uint16_t, bool> resolve(AddressingMode);
 
-  void op_LDA_immediate(uint8_t);
-  void op_LDA_zeropage(uint8_t);
+  void lda(uint16_t);
+  void sta(uint16_t);
+  void txa();
 };
 
 }  // namespace Nestun

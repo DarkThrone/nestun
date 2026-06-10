@@ -16,7 +16,7 @@ constexpr auto buildTable() {
   std::array<Instruction, 256> t{};
 
   for (auto& i : t) {
-    i = {.mode = AddressingMode::Implied,
+    i = {.mode = AddressingMode::Implicit,
          .shape = OpShape::Implied,
          .op = "ILL",
          .opcode = 0x04,
@@ -25,22 +25,21 @@ constexpr auto buildTable() {
   }
 
   // LDA
-  t[0xA9] =
-      {
-          .mode = AddressingMode::Immediate,
-          .shape = OpShape::Write,
-          .op = "LDA",
-          .opcode = 0xA9,
-          .cycles = 2,
-          .execute = [](Cpu& cpu, uint16_t v) { cpu.lda(v); },
-      };
+  t[0xA9] = {
+      .mode = AddressingMode::Immediate,
+      .shape = OpShape::Write,
+      .op = "LDA",
+      .opcode = 0xA9,
+      .cycles = 2,
+      .execute = [](Cpu& cpu, uint16_t v) { cpu.lda(v); },
+  };
 
   t[0xA5] = {.mode = AddressingMode::ZeroPage,
              .shape = OpShape::Write,
              .op = "LDA",
              .opcode = 0xA5,
              .cycles = 3,
-             .execute = [](Cpu& c, uint16_t a) {}};
+             .execute = [](Cpu& c, uint16_t a) { c.lda(static_cast<uint8_t>(a)); }};
 
   t[0xB5] = {.mode = AddressingMode::ZeroPageX,
              .shape = OpShape::Write,
@@ -84,7 +83,7 @@ constexpr auto buildTable() {
              .cycles = 5,
              .execute = [](Cpu& c, uint16_t a) {}};
   // NOP
-  t[0xEA] = {.mode = AddressingMode::Implied,
+  t[0xEA] = {.mode = AddressingMode::Implicit,
              .shape = OpShape::Implied,
              .op = "NOP",
              .opcode = 0xEA,
@@ -96,7 +95,7 @@ constexpr auto buildTable() {
 }  // namespace
 
 namespace Nestun {
-void Cpu::lda(uint16_t value) {
+void Cpu::lda(uint8_t value) {
   A = value;
   set_nz(value);
 };

@@ -66,7 +66,7 @@ struct StatusFlags {
 };
 
 enum class AddressingMode : uint8_t {
-  Implied,
+  Implicit,
   Accumulator,
   Immediate,
   ZeroPage,
@@ -109,8 +109,6 @@ class Cpu {
   Bus* bus_;
   size_t cycles_ = 0;
 
-  void set_nz(uint8_t v) { P.set_nz(v); }
-
  public:
   uint8_t A = 0, X = 0, Y = 0;
   uint8_t SP = 0xF0;
@@ -119,14 +117,21 @@ class Cpu {
   StatusFlags P;
 
   static const std::array<Instruction, 256> TABLE;
-
   Cpu(Bus& bus) : bus_(&bus) {};
+
+  uint8_t getA() const;
+  uint8_t getX() const;
+  uint8_t getY() const;
+  uint8_t getSP() const;
+  uint16_t getPC() const;
 
   void tick();
   void reset();
   std::pair<uint16_t, bool> resolve(AddressingMode);
 
-  void lda(uint16_t);
+  void set_nz(uint8_t v) { P.set_nz(v); }
+
+  void lda(uint8_t);
   void sta(uint16_t);
   void txa();
 };

@@ -11,7 +11,7 @@ using namespace std;
 [[nodiscard]] uint8_t Bus::read(const uint16_t address) const { return mem.at(address); }
 
 void Bus::write(const uint16_t address, const uint8_t value) {
-  if (address > 0X1000) {
+  if (address > 0X10000) {
     println(stderr, "memory read is out of bounds");
     quick_exit(-1);
   }
@@ -20,4 +20,6 @@ void Bus::write(const uint16_t address, const uint8_t value) {
   mem[address] = value;
 }
 
-void Bus::load_rom(const std::string path) { println("Loading rom {}", path); }
+void Bus::load_rom(const std::string& path) { println("Loading rom {}", path); }
+
+void Bus::clear() { mem.fill(0); }

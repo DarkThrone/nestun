@@ -3,22 +3,25 @@
 #include <cstdint>
 #include <format>
 #include <print>
+#include <utility>
 
 using namespace Nestun;
 using namespace std;
 
 pair<uint16_t, bool> Cpu::resolve(AddressingMode mode) {
+  println("Trying to resolve");
   switch (mode) {
     case AddressingMode::Immediate:
+      println("resolving Immediate value in 0x{:04x}", PC);
       return make_pair(PC++, false);
     case AddressingMode::ZeroPage:
-      return make_pair(bus_->read(PC++) & 0xFF, false);
+      return {bus_->read(PC++) & 0xFF, false};
     case AddressingMode::Absolute: {
       uint8_t lo = bus_->read(PC++);
       uint8_t hi = bus_->read(PC++);
 
       auto value = static_cast<uint16_t>(lo | (hi << 8));
-      return make_pair(value, false);
+      return {value, false};
     }
     case AddressingMode::Indirect: {
       // The 6502's memory indirect jump instruction, JMP (<address>), has a nonintuitive limitation
@@ -41,7 +44,7 @@ pair<uint16_t, bool> Cpu::resolve(AddressingMode mode) {
     }
     case AddressingMode::Relative: {
       uint16_t address = bus_->read(PC++);
-      return make_pair(address + PC, false);
+      return make_pair(address + PC++, false);
     }
     case AddressingMode::ZeroPageX:
     case AddressingMode::ZeroPageY:
@@ -58,19 +61,26 @@ pair<uint16_t, bool> Cpu::resolve(AddressingMode mode) {
 };
 
 uint8_t Cpu::getA() const { return A; }
-uint8_t Cpu::getX() const { return A; }
-uint8_t Cpu::getY() const { return A; }
-uint8_t Cpu::getSP() const { return A; }
-uint16_t Cpu::getPC() const { return A; }
+uint8_t Cpu::getX() const { return X; }
+uint8_t Cpu::getY() const { return Y; }
+uint8_t Cpu::getSP() const { return SP; }
+uint16_t Cpu::getPC() const { return PC; }
+void Cpu::setA(uint8_t A_) { A = A_; }
+void Cpu::setX(uint8_t X_) { X = X_; }
+void Cpu::setY(uint8_t Y_) { Y = Y_; }
+void Cpu::setSP(uint8_t SP_) { SP = SP_; }
+void Cpu::setPC(uint16_t PC_) { PC = PC_; }
 
 void Cpu::tick() {
   println("Fetching instruction");
   uint8_t opcode = bus_->read(PC++);
 
   const auto& inst = TABLE.at(static_cast<std::size_t>(opcode));
-  println("Decoding instruction {:x}", opcode);
+  println("Resolving instruction {:x}", opcode);
+  println("instruction mode {}", static_cast<int>(inst.mode));
 
   auto [addr, crossed] = resolve(inst.mode);
+  PC++;
 
   cycles_ += inst.cycles;
 
@@ -90,5 +100,7 @@ void Cpu::tick() {
 
   println("Executing instruction: {} {:02x} cyc={}", inst.op, inst.opcode, cycles_);
 }
+
+uint8_t Cpu::readMem(uint16_t address) { return bus_->read(address); }
 
 void Cpu::reset() { println("Resetting PC to {}", 1); }

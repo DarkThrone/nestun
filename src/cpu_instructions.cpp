@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <print>
 
 #include "../include/Cpu.hpp"
 
@@ -31,7 +32,14 @@ constexpr auto buildTable() {
       .op = "LDA",
       .opcode = 0xA9,
       .cycles = 2,
-      .execute = [](Cpu& cpu, uint16_t v) { cpu.lda(v); },
+      .execute =
+          [](Cpu& cpu, uint16_t address) {
+            // storing
+            std::println("Reading value from {:04x}", address);
+            uint8_t value = cpu.readMem(address);
+            std::println("value in address {:04x} is {:02x}", address, value);
+            cpu.lda(value);
+          },
   };
 
   t[0xA5] = {.mode = AddressingMode::ZeroPage,

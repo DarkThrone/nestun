@@ -1,3 +1,4 @@
+#pragma once
 #include <array>
 #include <cstdint>
 #include <cstring>
@@ -9,9 +10,10 @@ class Bus {
 
  public:
   Bus() = default;
-  [[nodiscard]] uint8_t read(uint16_t address) const;
-  void write(uint16_t address, uint8_t value);
+  [[nodiscard]] uint8_t read(uint16_t) const;
+  void write(uint16_t, uint8_t);
+  void clear();
 
-  void load_rom(std::string path);
+  void load_rom(const std::string&);
 };
 }  // namespace Nestun

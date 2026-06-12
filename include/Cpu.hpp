@@ -1,7 +1,7 @@
-#include <sys/types.h>
-
+#pragma once
+#include <array>
 #include <cstdint>
-#include <string>
+#include <string_view>
 
 #include "Bus.hpp"
 
@@ -99,7 +99,7 @@ enum class OpShape : uint8_t {
 struct Instruction {
   AddressingMode mode;
   OpShape shape;
-  std::string op;
+  std::string_view op;
   uint8_t opcode;
   uint8_t cycles;
   void (*execute)(Cpu& cpu, uint16_t address);
@@ -117,6 +117,7 @@ class Cpu {
   StatusFlags P;
 
   static const std::array<Instruction, 256> TABLE;
+
   Cpu(Bus& bus) : bus_(&bus) {};
 
   uint8_t getA() const;
@@ -125,8 +126,15 @@ class Cpu {
   uint8_t getSP() const;
   uint16_t getPC() const;
 
+  void setA(uint8_t);
+  void setX(uint8_t);
+  void setY(uint8_t);
+  void setSP(uint8_t);
+  void setPC(uint16_t);
+
   void tick();
   void reset();
+
   std::pair<uint16_t, bool> resolve(AddressingMode);
 
   void set_nz(uint8_t v) { P.set_nz(v); }
@@ -134,6 +142,7 @@ class Cpu {
   void lda(uint8_t);
   void sta(uint16_t);
   void txa();
+  uint8_t readMem(uint16_t);
 };
 
 }  // namespace Nestun
